@@ -8,7 +8,7 @@ public class CreateCaptchaExamples : IMultipleExamplesProvider<CaptchaRequest>
     {
         yield return SwaggerExample.Create(
             "Example 1",
-            "Example 1 - Create easy captcha with text",
+            "Example 1 - Create captcha with text",
             new CaptchaRequest
             {
                 Text = "hello"

@@ -3,7 +3,7 @@ using RestSharp;
 
 public class TestBase : IDisposable
 {
-    protected readonly RestClient Client;
+    protected RestClient Client { get; set; }
 
     protected TestBase(ScenarioContext scenarioContext) => Client = new RestClient(new RestClientOptions(TestConstants.ServiceUrl));
 
