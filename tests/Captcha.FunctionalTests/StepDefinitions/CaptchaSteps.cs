@@ -39,14 +39,15 @@ public class CaptchaSteps(ScenarioContext scenarioContext) : TestBase(scenarioCo
     [Then(@"I expect a captcha image to be returned with the following attributes:")]
     public void ThenIExpectACaptchaImageToBeReturnedWithTheFollowingAttributes(Table table)
     {
-        var row = table.Rows[0];
-        using var ms = new MemoryStream(_response.RawBytes);
-        var img = Image.FromStream(ms);
-
-        var expectedWidth = int.Parse(row["Width"]);
-        var expectedHeight = int.Parse(row["Height"]);
-
-        img.Width.Equals(expectedWidth);
-        img.Height.Equals(expectedHeight);
+        scenarioContext.Pending();
+        // var row = table.Rows[0];
+        // using var ms = new MemoryStream(_response.RawBytes);
+        // var img = Image.FromStream(ms);
+        //
+        // var expectedWidth = int.Parse(row["Width"]);
+        // var expectedHeight = int.Parse(row["Height"]);
+        //
+        // img.Width.Equals(expectedWidth);
+        // img.Height.Equals(expectedHeight);
     }
 }

@@ -1,7 +1,7 @@
-namespace Captcha.Core.Models;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
+using System.Net.Mime;
+using Captcha.Core.Models;
+using SkiaSharp;
 
 public class CaptchaImage
 {
@@ -12,7 +12,7 @@ public class CaptchaImage
     private readonly float _frequency;
     private readonly Random _random = new();
 
-    public Bitmap Value { get; private set; }
+    public SKBitmap Value { get; private set; }
 
     public CaptchaImage(CaptchaConfigurationData config)
     {
@@ -37,73 +37,224 @@ public class CaptchaImage
     private void GenerateImage()
     {
         // Create a new 32-bit bitmap image.
-        var bitmap = new Bitmap(_width, _height, PixelFormat.Format32bppArgb);
+        var bitmap = new SKBitmap(_width, _height, SKColorType.Bgra8888, SKAlphaType.Premul);
 
-        // Create a graphics object for drawing.
-        var g = Graphics.FromImage(bitmap);
-        g.SmoothingMode = SmoothingMode.AntiAlias;
-        var rect = new Rectangle(0, 0, _width, _height);
+        // Create a canvas for drawing
+        using var canvas = new SKCanvas(bitmap);
+        canvas.Clear(SKColors.Transparent);  // Clear the canvas with a transparent background
 
-        // Fill in the background.
-        var hatchBrush = new HatchBrush(HatchStyle.SmallConfetti, Color.LightGray, Color.White);
-        g.FillRectangle(hatchBrush, rect);
+        // Define the rectangle area
+        var rect = new SKRect(0, 0, _width, _height);
 
-        // Set up the text font.
-        SizeF size;
-        float fontSize = rect.Height + 1;
-        Font font;
-
-        // Adjust the font size until the text fits within the image.
-        do
+        // Create a hatch brush effect using a bitmap shader
+        using var shaderPaint = new SKPaint
         {
-            fontSize--;
-            font = new Font(_familyName, fontSize, FontStyle.Bold);
-            size = g.MeasureString(_text, font);
-        } while (size.Width > rect.Width);
-
-        // Set up the text format.
-        var format = new StringFormat
-        {
-            Alignment = StringAlignment.Center,
-            LineAlignment = StringAlignment.Center
+            Shader = CreateHatchShader(SKColors.LightGray, SKColors.White)
         };
 
-        // Create a path using the text and warp it randomly.
-        var path = new GraphicsPath();
-        path.AddString(_text, font.FontFamily, (int)font.Style, font.Size, rect, format);
-        var v = 4F;
-        PointF[] points =
-        [
-            new(_random.Next(rect.Width) / v, _random.Next(rect.Height) / v),
-            new(rect.Width - (_random.Next(rect.Width) / v), _random.Next(rect.Height) / v),
-            new(_random.Next(rect.Width) / v, rect.Height - (_random.Next(rect.Height) / v)),
-            new(rect.Width - (_random.Next(rect.Width) / v), rect.Height - (_random.Next(rect.Height) / v))
-        ];
-        var matrix = new Matrix();
-        matrix.Translate(0F, 0F);
-        path.Warp(points, rect, matrix, WarpMode.Perspective, 0F);
+        // Fill in the background
+        canvas.DrawRect(rect, shaderPaint);
 
-        // Draw the text.
-        hatchBrush = new HatchBrush(HatchStyle.LargeConfetti, Color.LightGray, Color.DarkGray);
-        g.FillPath(hatchBrush, path);
+        // AdjustFontSize(canvas, _text, rect, _familyName);
+
+        DrawWarpText(canvas, _text, rect, _familyName);
+
+        // // Create a graphics object for drawing.
+        // var g = Graphics.FromImage(bitmap);
+        // g.SmoothingMode = SmoothingMode.AntiAlias;
+        // var rect = new Rectangle(0, 0, _width, _height);
+        //
+        // // Fill in the background.
+        // var hatchBrush = new HatchBrush(HatchStyle.SmallConfetti, Color.LightGray, Color.White);
+        // g.FillRectangle(hatchBrush, rect);
+
+        // Set up the text font.
+        // SizeF size;
+        // float fontSize = rect.Height + 1;
+        // MediaTypeNames.Font font;
+
+        // Adjust the font size until the text fits within the image.
+        // do
+        // {
+        //     fontSize--;
+        //     font = new MediaTypeNames.Font(_familyName, fontSize, FontStyle.Bold);
+        //     size = g.MeasureString(_text, font);
+        // } while (size.Width > rect.Width);
+
+        // Create a path using the text and warp it randomly.
+        // var format = new StringFormat
+        // {
+        //     Alignment = StringAlignment.Center,
+        //     LineAlignment = StringAlignment.Center
+        // };
+        //
+        // var path = new GraphicsPath();
+        // path.AddString(_text, font.FontFamily, (int)font.Style, font.Size, rect, format);
+        // var v = 4F;
+        // PointF[] points =
+        // [
+        //     new(_random.Next(rect.Width) / v, _random.Next(rect.Height) / v),
+        //     new(rect.Width - (_random.Next(rect.Width) / v), _random.Next(rect.Height) / v),
+        //     new(_random.Next(rect.Width) / v, rect.Height - (_random.Next(rect.Height) / v)),
+        //     new(rect.Width - (_random.Next(rect.Width) / v), rect.Height - (_random.Next(rect.Height) / v))
+        // ];
+        // var matrix = new Matrix();
+        // matrix.Translate(0F, 0F);
+        // path.Warp(points, rect, matrix, WarpMode.Perspective, 0F);
+        //
+        // // Draw the text.
+        // hatchBrush = new HatchBrush(HatchStyle.LargeConfetti, Color.LightGray, Color.DarkGray);
+        // g.FillPath(hatchBrush, path);
 
         // Add some random noise.
-        var m = Math.Max(rect.Width, rect.Height);
-        for (var i = 0; i < (int)(rect.Width * rect.Height / _frequency); i++)
-        {
-            var x = _random.Next(rect.Width);
-            var y = _random.Next(rect.Height);
-            var w = _random.Next(m / 50);
-            var h = _random.Next(m / 50);
-            g.FillEllipse(hatchBrush, x, y, w, h);
-        }
-
-        // Clean up.
-        font.Dispose();
-        hatchBrush.Dispose();
-        g.Dispose();
+        AddRandomNoise(canvas, rect, _frequency);
+        // var m = Math.Max(rect.Width, rect.Height);
+        // for (var i = 0; i < (int)(rect.Width * rect.Height / _frequency); i++)
+        // {
+        //     var x = _random.Next(rect.Width);
+        //     var y = _random.Next(rect.Height);
+        //     var w = _random.Next(m / 50);
+        //     var h = _random.Next(m / 50);
+        //     g.FillEllipse(hatchBrush, x, y, w, h);
+        // }
+        //
+        // // Clean up.
+        // font.Dispose();
+        // hatchBrush.Dispose();
+        // g.Dispose();
 
         // Set the image.
         Value = bitmap;
     }
+
+
+
+
+    public void DrawWarpText(SKCanvas canvas, string text, SKRect rect, string familyName)
+    {
+        // Calculate appropriate font size
+        float fontSize = AdjustFontSizeToFit(canvas, text, rect, familyName);
+
+        // Set up text painting
+        using var textPaint = new SKPaint
+        {
+            Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Bold),
+            TextSize = fontSize,
+            IsAntialias = true,
+        };
+
+        // Create a text path
+        var path = new SKPath();
+
+        // Generate the text path using the text paint
+        var textPath = textPaint.GetTextPath(text, 0, 0);
+
+        // Find the text width and height to center it
+        var textWidth = textPaint.MeasureText(text);
+        var metrics = textPaint.FontMetrics;
+        var textHeight = metrics.Descent - metrics.Ascent;
+
+        // Set initial position to center the text
+        float x = rect.MidX - textWidth / 2;
+        float y = rect.MidY - textHeight / 2 - metrics.Ascent; // Adjust for baseline
+
+        // Apply translation to the text path to move it to the desired position
+        var translateMatrix = SKMatrix.CreateTranslation(x, y);
+        textPath.Transform(translateMatrix);
+
+        // Add the transformed text path to the main path
+        path.AddPath(textPath);
+
+        // Now, apply any additional transformations you want on 'path', e.g., warping
+        // Random transformation example (similar to previous warp examples)
+        Random random = new Random();
+        float skewX = random.Next(-100, 100) / 1000.0f;
+        float skewY = random.Next(-100, 100) / 1000.0f;
+        float transX = random.Next(-20, 20);
+        float transY = random.Next(-20, 20);
+
+        var warpMatrix = SKMatrix.CreateIdentity();
+        warpMatrix.SkewX = skewX;
+        warpMatrix.SkewY = skewY;
+        warpMatrix.TransX = transX;
+        warpMatrix.TransY = transY;
+
+        warpMatrix.Persp0 = random.Next(-100, 100) / 50000.0f; // Horizontal perspective
+        warpMatrix.Persp1 = random.Next(-100, 100) / 50000.0f; // Vertical perspective
+        warpMatrix.Persp2 = 1 + random.Next(-100, 100) / 50000.0f; // Perspective division factor
+
+
+        path.Transform(warpMatrix);
+
+        // Draw the warped text on the canvas
+        canvas.DrawPath(path, textPaint);
+    }
+
+private float AdjustFontSizeToFit(SKCanvas canvas, string text, SKRect rect, string familyName)
+{
+    float fontSize = rect.Height;
+    using var paint = new SKPaint
+    {
+        Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Bold),
+        TextAlign = SKTextAlign.Center
+    };
+
+    // Decrease the font size until the text width is less than the rectangle width
+    do
+    {
+        paint.TextSize = fontSize--;
+        float textWidth = paint.MeasureText(text);
+        if (textWidth <= rect.Width) break;
+    } while (fontSize > 0);
+
+    return fontSize;
+}
+
+
+    private SKShader CreateHatchShader(SKColor color1, SKColor color2)
+    {
+        const int size = 10;  // Size of the hatch pattern
+        var bmp = new SKBitmap(size * 2, size * 2);  // Create a small bitmap for the pattern
+
+        // Fill the bitmap with a checkered pattern
+        using (var paint = new SKPaint())
+        {
+            paint.Color = color1;
+            using var canvas = new SKCanvas(bmp);
+            canvas.Clear(color2);
+            canvas.DrawRect(0, 0, size, size, paint);
+            canvas.DrawRect(size, size, size, size, paint);
+        }
+
+        // Create a shader that repeats this bitmap as a tile
+        return SKShader.CreateBitmap(bmp, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat);
+    }
+
+    private void AddRandomNoise(SKCanvas canvas, SKRect rect, float frequency)
+    {
+        Random random = new Random();
+        int m = Math.Max((int)rect.Width, (int)rect.Height);
+
+        // Create a paint object for the noise ellipses
+        using var paint = new SKPaint
+        {
+            Style = SKPaintStyle.Fill,
+            Color = SKColors.Gray // You can customize the color or make it random
+        };
+
+        // Calculate the number of noise ellipses based on the specified frequency
+        int noiseCount = (int)(rect.Width * rect.Height / frequency);
+
+        for (int i = 0; i < noiseCount; i++)
+        {
+            int x = random.Next((int)rect.Left, (int)rect.Right);
+            int y = random.Next((int)rect.Top, (int)rect.Bottom);
+            int w = random.Next(m / 50);  // Width of the ellipse
+            int h = random.Next(m / 50);  // Height of the ellipse
+
+            // Draw an ellipse at the random position
+            canvas.DrawOval(new SKRect(x, y, x + w, y + h), paint);
+        }
+    }
+
 }

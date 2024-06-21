@@ -2,6 +2,7 @@ namespace Captcha.Core.Services;
 using System.Drawing.Imaging;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using SkiaSharp;
 
 public class CaptchaService : ICaptchaService
 {
@@ -11,7 +12,9 @@ public class CaptchaService : ICaptchaService
 
         // Save the image to a memory stream so we can return it as a file
         await using var ms = new MemoryStream();
-        image.Value.Save(ms, ImageFormat.Jpeg);
+        using var data = image.Value.Encode(SKEncodedImageFormat.Jpeg, 100); // quality is set to 100, vary as needed
+        data.SaveTo(ms);
+
         var imageBytes = ms.ToArray();
 
         // Return the image as a jpeg file

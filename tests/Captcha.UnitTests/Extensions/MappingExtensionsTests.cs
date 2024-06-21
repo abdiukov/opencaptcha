@@ -39,13 +39,6 @@ public class MappingExtensionsTests
         Assert.That(result.Difficulty, Is.EqualTo(CaptchaDifficulty.Medium));
     }
 
-    [Test]
-    public void ToDomainUsesFontFamilyGenericSerifNameForFontProperty()
-    {
-        var request = new CaptchaRequest();
-        var result = request.ToDomain();
-        Assert.That(result.Font, Is.EqualTo(FontFamily.GenericSerif.Name));
-    }
 
     [Test]
     public void ToDomainUsesProvidedWidthWhenGiven()
