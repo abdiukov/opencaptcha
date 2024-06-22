@@ -9,7 +9,7 @@ public static class MappingExtensions
         Text = request.Text,
         Width = request.Width ?? 400,
         Height = request.Height ?? 100,
-        Font = "Times New Roman",
+        Font = "Brush Script",
         Difficulty = request.Difficulty ?? CaptchaDifficulty.Medium
     };
 }

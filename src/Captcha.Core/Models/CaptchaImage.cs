@@ -1,7 +1,6 @@
-using System.Drawing;
-using System.Net.Mime;
-using Captcha.Core.Models;
 using SkiaSharp;
+
+namespace Captcha.Core.Models;
 
 public class CaptchaImage
 {
@@ -35,29 +34,17 @@ public class CaptchaImage
 
     private void GenerateImage()
     {
-        // Create a new 32-bit bitmap image.
         var bitmap = new SKBitmap(_width, _height, SKColorType.Bgra8888, SKAlphaType.Premul);
-
-        // Create a canvas for drawing
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.Transparent);  // Clear the canvas with a transparent background
 
-        // Define the rectangle area
         var rect = new SKRect(0, 0, _width, _height);
 
-        // Create a hatch brush effect using a bitmap shader
-        using var shaderPaint = new SKPaint
-        {
-            Shader = CreateHatchShader(SKColors.LightGray, SKColors.White)
-        };
-
-        // Fill in the background
-        canvas.DrawRect(rect, shaderPaint);
+        // Draw a unique hatch pattern
+        DrawUniqueHatch(canvas, rect, SKColors.DarkGray, SKColors.WhiteSmoke, true);
 
         AdjustFontSizeToFit(canvas, _text, rect, _familyName);
-
         DrawWarpText(canvas, _text, rect, _familyName);
-
         AddRandomNoise(canvas, rect, _frequency);
 
         Value = bitmap;
@@ -74,8 +61,9 @@ public class CaptchaImage
         // Set up text painting
         using var textPaint = new SKPaint
         {
-            Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Bold),
+            Typeface = SKTypeface.FromFamilyName(familyName),
             TextSize = fontSize,
+            Color = SKColors.DarkGray,
             IsAntialias = true,
         };
 
@@ -130,7 +118,7 @@ public class CaptchaImage
         float fontSize = rect.Height;
         using var paint = new SKPaint
         {
-            Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Bold),
+            Typeface = SKTypeface.FromFamilyName(familyName),
             TextAlign = SKTextAlign.Center
         };
 
@@ -147,24 +135,27 @@ public class CaptchaImage
     }
 
 
-    private SKShader CreateHatchShader(SKColor color1, SKColor color2)
+    private void DrawUniqueHatch(SKCanvas canvas, SKRect rect, SKColor color1, SKColor color2, bool large = false)
     {
-        const int size = 10;  // Size of the hatch pattern
-        var bmp = new SKBitmap(size * 2, size * 2);  // Create a small bitmap for the pattern
+        Random rnd = new Random();
+        int dotCount = large ? 50 : 100;  // Fewer, larger dots for 'LargeConfetti'
+        int minSize = large ? 3 : 1;
+        int maxSize = large ? 10 : 5;
 
-        // Fill the bitmap with a checkered pattern
-        using (var paint = new SKPaint())
+        // Draw the background
+        canvas.DrawRect(rect, new SKPaint { Color = color2 });
+
+        // Draw confetti
+        for (int i = 0; i < dotCount; i++)
         {
-            paint.Color = color1;
-            using var canvas = new SKCanvas(bmp);
-            canvas.Clear(color2);
-            canvas.DrawRect(0, 0, size, size, paint);
-            canvas.DrawRect(size, size, size, size, paint);
+            var paint = new SKPaint { Color = color1 };
+            int x = rnd.Next((int)rect.Left, (int)rect.Right);
+            int y = rnd.Next((int)rect.Top, (int)rect.Bottom);
+            int size = rnd.Next(minSize, maxSize);
+            canvas.DrawOval(new SKRect(x, y, x + size, y + size), paint);
         }
-
-        // Create a shader that repeats this bitmap as a tile
-        return SKShader.CreateBitmap(bmp, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat);
     }
+
 
     private void AddRandomNoise(SKCanvas canvas, SKRect rect, float frequency)
     {
@@ -174,7 +165,7 @@ public class CaptchaImage
         using var paint = new SKPaint
         {
             Style = SKPaintStyle.Fill,
-            Color = SKColors.Gray // You can customize the color or make it random
+            Color = SKColors.DarkGray // You can customize the color or make it random
         };
 
         // Calculate the number of noise ellipses based on the specified frequency
