@@ -1,5 +1,5 @@
 namespace Captcha.Core.Extensions;
-using System.Drawing;
+
 using Models;
 
 public static class MappingExtensions

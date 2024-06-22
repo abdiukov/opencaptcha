@@ -15,9 +15,9 @@ I want to send different captcha requests and assure the image is generated
         Examples:
           | Text         | Width | Height | Difficulty  | ExpectedWidth | ExpectedHeight |
           | مرحبًا       |       |        |             | 400           | 100            |
-          | 你好         |       |        |             | 400           | 100            |
-          | こんにちは    |       |        |             | 400           | 100            |
-          | 안녕하세요     |       |        |             | 400           | 100            |
+          | 你好           |       |        |             | 400           | 100            |
+          | こんにちは        |       |        |             | 400           | 100            |
+          | 안녕하세요        |       |        |             | 400           | 100            |
           | Здравствуйте |       |        |             | 400           | 100            |
           | Bonjour      |       |        |             | 400           | 100            |
           | Guten Tag    |       |        |             | 400           | 100            |
@@ -30,4 +30,4 @@ I want to send different captcha requests and assure the image is generated
           | foo          | 400   | 400    | Hard        | 400           | 400            |
           | Ciao         | 200   |        | Easy        | 200           | 100            |
           | Olá          | 300   | 300    | Challenging | 300           | 300            |
-          | สวัสดี         | 400   | 400    | Hard        | 400           | 400            |
+          | สวัสดี       | 400   | 400    | Hard        | 400           | 400            |

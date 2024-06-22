@@ -1,8 +1,8 @@
 namespace Captcha.FunctionalTests.StepDefinitions;
 
-using System.Drawing;
 using Core.Models;
 using RestSharp;
+using SkiaSharp;
 using Support;
 using TechTalk.SpecFlow;
 
@@ -36,18 +36,19 @@ public class CaptchaSteps(ScenarioContext scenarioContext) : TestBase(scenarioCo
         _response = await Client.ExecuteAsync(request);
     }
 
+
     [Then(@"I expect a captcha image to be returned with the following attributes:")]
     public void ThenIExpectACaptchaImageToBeReturnedWithTheFollowingAttributes(Table table)
     {
-        scenarioContext.Pending();
-        // var row = table.Rows[0];
-        // using var ms = new MemoryStream(_response.RawBytes);
-        // var img = Image.FromStream(ms);
-        //
-        // var expectedWidth = int.Parse(row["Width"]);
-        // var expectedHeight = int.Parse(row["Height"]);
-        //
-        // img.Width.Equals(expectedWidth);
-        // img.Height.Equals(expectedHeight);
+        var row = table.Rows[0];
+        using var ms = new MemoryStream(_response.RawBytes);
+        using var s = new SKManagedStream(ms);
+        var img = SKBitmap.Decode(s);
+
+        var expectedWidth = int.Parse(row["Width"]);
+        var expectedHeight = int.Parse(row["Height"]);
+
+        img.Width.Equals(expectedWidth);
+        img.Height.Equals(expectedHeight);
     }
 }

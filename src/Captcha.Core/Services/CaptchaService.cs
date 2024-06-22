@@ -1,5 +1,5 @@
 namespace Captcha.Core.Services;
-using System.Drawing.Imaging;
+
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using SkiaSharp;

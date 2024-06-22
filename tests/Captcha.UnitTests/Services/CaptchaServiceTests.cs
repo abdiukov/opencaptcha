@@ -1,9 +1,9 @@
-namespace Captcha.Core.Tests.Services;
+namespace Captcha.UnitTests.Services;
 
 using System.Threading.Tasks;
+using Captcha.Core.Models;
 using Captcha.Core.Services;
 using Microsoft.AspNetCore.Mvc;
-using Models;
 using NUnit.Framework;
 
 [TestFixture]
