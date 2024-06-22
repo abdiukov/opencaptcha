@@ -12,7 +12,7 @@ public class CaptchaService : ICaptchaService
 
         // Save the image to a memory stream so we can return it as a file
         await using var ms = new MemoryStream();
-        using var data = image.GenerateImage(config).Encode(SKEncodedImageFormat.Jpeg, 30); // quality is set to 100, vary as needed
+        using var data = image.GenerateImage(config).Encode(SKEncodedImageFormat.Webp, 30); // quality is set to 30, vary as needed
         data.SaveTo(ms);
 
         var imageBytes = ms.ToArray();

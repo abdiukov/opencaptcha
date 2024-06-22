@@ -17,12 +17,12 @@ public class CaptchaDrawingService()
                 $"Invalid value for Difficulty: {request.Difficulty}. The provided captcha difficulty is not supported.")
         };
 
-        var bitmap = new SKBitmap(request.Width, request.Height, SKColorType.Gray8, SKAlphaType.Opaque);
+        var bitmap = new SKBitmap(request.Width, request.Height, SKColorType.Gray8, SKAlphaType.Unpremul);
         using var canvas = new SKCanvas(bitmap);
         var rect = new SKRect(0, 0, request.Width, request.Height);
 
         // Draw a unique hatch pattern
-        DrawUniqueHatch(canvas, rect, SKColors.DarkGray, SKColors.WhiteSmoke, false);
+        DrawUniqueHatch(canvas, rect, SKColors.DarkGray, SKColors.WhiteSmoke);
         AdjustFontSizeToFit(canvas, request.Text, rect, request.Font);
         DrawWarpText(canvas, request.Text, rect, request.Font);
         AddRandomNoise(canvas, rect, frequency);
