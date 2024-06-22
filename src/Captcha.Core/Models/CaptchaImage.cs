@@ -1,62 +1,47 @@
+namespace Captcha.Core.Models;
 using SkiaSharp;
 
-namespace Captcha.Core.Models;
-
-public class CaptchaImage
+public class CaptchaImage(CaptchaConfigurationData config)
 {
-    private readonly string _text;
-    private readonly int _width;
-    private readonly int _height;
-    private readonly string _familyName;
-    private readonly float _frequency;
-    private readonly Random _random = new();
-
-    public SKBitmap Value { get; private set; }
-
-    public CaptchaImage(CaptchaConfigurationData config)
+    public string Text { get; set; } = config.Text;
+    public int Width { get; set; } = config.Width;
+    public int Height { get; set; } = config.Height;
+    public string FamilyName { get; set; } = config.Font;
+    public float Frequency { get; set; } = config.Difficulty switch
     {
-        _text = config.Text;
-        _width = config.Width;
-        _height = config.Height;
-        _familyName = config.Font;
+        CaptchaDifficulty.Easy => 300F,
+        CaptchaDifficulty.Medium => 100F,
+        CaptchaDifficulty.Challenging => 30F,
+        CaptchaDifficulty.Hard => 20F,
+        _ => throw new ArgumentOutOfRangeException(nameof(config),
+            $"Invalid value for Difficulty: {config.Difficulty}. The provided captcha difficulty is not supported.")
+    };
 
-        _frequency = config.Difficulty switch
-        {
-            CaptchaDifficulty.Easy => 300F,
-            CaptchaDifficulty.Medium => 100F,
-            CaptchaDifficulty.Challenging => 30F,
-            CaptchaDifficulty.Hard => 20F,
-            _ => throw new ArgumentOutOfRangeException(nameof(config),
-                $"Invalid value for Difficulty: {config.Difficulty}. The provided captcha difficulty is not supported.")
-        };
-        GenerateImage();
-    }
+    public Random RandomGenerator { get; set; } = new Random();
 
-    private void GenerateImage()
+    public SKBitmap GenerateImage()
     {
-        var bitmap = new SKBitmap(_width, _height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        var bitmap = new SKBitmap(Width, Height, SKColorType.Bgra8888, SKAlphaType.Premul);
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.Transparent);  // Clear the canvas with a transparent background
 
-        var rect = new SKRect(0, 0, _width, _height);
+        var rect = new SKRect(0, 0, Width, Height);
 
         // Draw a unique hatch pattern
         DrawUniqueHatch(canvas, rect, SKColors.DarkGray, SKColors.WhiteSmoke, true);
 
-        AdjustFontSizeToFit(canvas, _text, rect, _familyName);
-        DrawWarpText(canvas, _text, rect, _familyName);
-        AddRandomNoise(canvas, rect, _frequency);
+        AdjustFontSizeToFit(canvas, Text, rect, FamilyName);
+        DrawWarpText(canvas, Text, rect, FamilyName);
+        AddRandomNoise(canvas, rect, Frequency);
 
-        Value = bitmap;
+        return bitmap;
     }
 
 
-
-
-    public void DrawWarpText(SKCanvas canvas, string text, SKRect rect, string familyName)
+    private void DrawWarpText(SKCanvas canvas, string text, SKRect rect, string familyName)
     {
         // Calculate appropriate font size
-        float fontSize = AdjustFontSizeToFit(canvas, text, rect, familyName);
+        var fontSize = AdjustFontSizeToFit(canvas, text, rect, familyName);
 
         // Set up text painting
         using var textPaint = new SKPaint
@@ -79,8 +64,8 @@ public class CaptchaImage
         var textHeight = metrics.Descent - metrics.Ascent;
 
         // Set initial position to center the text
-        float x = rect.MidX - textWidth / 2;
-        float y = rect.MidY - textHeight / 2 - metrics.Ascent; // Adjust for baseline
+        var x = rect.MidX - (textWidth / 2);
+        var y = rect.MidY - (textHeight / 2) - metrics.Ascent; // Adjust for baseline
 
         // Apply translation to the text path to move it to the desired position
         var translateMatrix = SKMatrix.CreateTranslation(x, y);
@@ -91,10 +76,10 @@ public class CaptchaImage
 
         // Now, apply any additional transformations you want on 'path', e.g., warping
         // Random transformation example (similar to previous warp examples)
-        float skewX = _random.Next(-100, 100) / 1000.0f;
-        float skewY = _random.Next(-100, 100) / 1000.0f;
-        float transX = _random.Next(-20, 20);
-        float transY = _random.Next(-20, 20);
+        var skewX = RandomGenerator.Next(-100, 100) / 1000.0f;
+        var skewY = RandomGenerator.Next(-100, 100) / 1000.0f;
+        float transX = RandomGenerator.Next(-20, 20);
+        float transY = RandomGenerator.Next(-20, 20);
 
         var warpMatrix = SKMatrix.CreateIdentity();
         warpMatrix.SkewX = skewX;
@@ -102,9 +87,9 @@ public class CaptchaImage
         warpMatrix.TransX = transX;
         warpMatrix.TransY = transY;
 
-        warpMatrix.Persp0 = _random.Next(-100, 100) / 50000.0f; // Horizontal perspective
-        warpMatrix.Persp1 = _random.Next(-100, 100) / 50000.0f; // Vertical perspective
-        warpMatrix.Persp2 = 1 + _random.Next(-100, 100) / 50000.0f; // Perspective division factor
+        warpMatrix.Persp0 = RandomGenerator.Next(-100, 100) / 50000.0f; // Horizontal perspective
+        warpMatrix.Persp1 = RandomGenerator.Next(-100, 100) / 50000.0f; // Vertical perspective
+        warpMatrix.Persp2 = 1 + (RandomGenerator.Next(-100, 100) / 50000.0f); // Perspective division factor
 
 
         path.Transform(warpMatrix);
@@ -113,9 +98,9 @@ public class CaptchaImage
         canvas.DrawPath(path, textPaint);
     }
 
-    private float AdjustFontSizeToFit(SKCanvas canvas, string text, SKRect rect, string familyName)
+    private static float AdjustFontSizeToFit(SKCanvas canvas, string text, SKRect rect, string familyName)
     {
-        float fontSize = rect.Height;
+        var fontSize = rect.Height;
         using var paint = new SKPaint
         {
             Typeface = SKTypeface.FromFamilyName(familyName),
@@ -126,32 +111,34 @@ public class CaptchaImage
         do
         {
             paint.TextSize = fontSize--;
-            float textWidth = paint.MeasureText(text);
+            var textWidth = paint.MeasureText(text);
             if (textWidth <= rect.Width)
+            {
                 break;
+            }
         } while (fontSize > 0);
 
         return fontSize;
     }
 
 
-    private void DrawUniqueHatch(SKCanvas canvas, SKRect rect, SKColor color1, SKColor color2, bool large = false)
+    private static void DrawUniqueHatch(SKCanvas canvas, SKRect rect, SKColor color1, SKColor color2, bool large = false)
     {
-        Random rnd = new Random();
-        int dotCount = large ? 50 : 100;  // Fewer, larger dots for 'LargeConfetti'
-        int minSize = large ? 3 : 1;
-        int maxSize = large ? 10 : 5;
+        var rnd = new Random();
+        var dotCount = large ? 50 : 100;  // Fewer, larger dots for 'LargeConfetti'
+        var minSize = large ? 3 : 1;
+        var maxSize = large ? 10 : 5;
 
         // Draw the background
         canvas.DrawRect(rect, new SKPaint { Color = color2 });
 
         // Draw confetti
-        for (int i = 0; i < dotCount; i++)
+        for (var i = 0; i < dotCount; i++)
         {
             var paint = new SKPaint { Color = color1 };
-            int x = rnd.Next((int)rect.Left, (int)rect.Right);
-            int y = rnd.Next((int)rect.Top, (int)rect.Bottom);
-            int size = rnd.Next(minSize, maxSize);
+            var x = rnd.Next((int)rect.Left, (int)rect.Right);
+            var y = rnd.Next((int)rect.Top, (int)rect.Bottom);
+            var size = rnd.Next(minSize, maxSize);
             canvas.DrawOval(new SKRect(x, y, x + size, y + size), paint);
         }
     }
@@ -159,7 +146,7 @@ public class CaptchaImage
 
     private void AddRandomNoise(SKCanvas canvas, SKRect rect, float frequency)
     {
-        int m = Math.Max((int)rect.Width, (int)rect.Height);
+        var m = Math.Max((int)rect.Width, (int)rect.Height);
 
         // Create a paint object for the noise ellipses
         using var paint = new SKPaint
@@ -169,14 +156,14 @@ public class CaptchaImage
         };
 
         // Calculate the number of noise ellipses based on the specified frequency
-        int noiseCount = (int)(rect.Width * rect.Height / frequency);
+        var noiseCount = (int)(rect.Width * rect.Height / frequency);
 
-        for (int i = 0; i < noiseCount; i++)
+        for (var i = 0; i < noiseCount; i++)
         {
-            int x = _random.Next((int)rect.Left, (int)rect.Right);
-            int y = _random.Next((int)rect.Top, (int)rect.Bottom);
-            int w = _random.Next(m / 50);  // Width of the ellipse
-            int h = _random.Next(m / 50);  // Height of the ellipse
+            var x = RandomGenerator.Next((int)rect.Left, (int)rect.Right);
+            var y = RandomGenerator.Next((int)rect.Top, (int)rect.Bottom);
+            var w = RandomGenerator.Next(m / 50);  // Width of the ellipse
+            var h = RandomGenerator.Next(m / 50);  // Height of the ellipse
 
             // Draw an ellipse at the random position
             canvas.DrawOval(new SKRect(x, y, x + w, y + h), paint);

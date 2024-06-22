@@ -31,7 +31,7 @@ public class CaptchaSteps(ScenarioContext scenarioContext) : TestBase(scenarioCo
     public async Task WhenISendTheRequestToTheCreateEndpointOfTheCaptchaController()
     {
         var request = new RestRequest("captcha") // calls localhost/captcha
-            { RequestFormat = DataFormat.Json, Method = Method.Post };
+        { RequestFormat = DataFormat.Json, Method = Method.Post };
         request.AddJsonBody(_request);
         _response = await Client.ExecuteAsync(request);
     }
