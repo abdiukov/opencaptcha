@@ -1,38 +1,33 @@
 namespace Captcha.Core.Models;
 using SkiaSharp;
 
-public class CaptchaImage(CaptchaConfigurationData config)
+public class CaptchaImage()
 {
-    public string Text { get; set; } = config.Text;
-    public int Width { get; set; } = config.Width;
-    public int Height { get; set; } = config.Height;
-    public string FamilyName { get; set; } = config.Font;
-    public float Frequency { get; set; } = config.Difficulty switch
-    {
-        CaptchaDifficulty.Easy => 300F,
-        CaptchaDifficulty.Medium => 100F,
-        CaptchaDifficulty.Challenging => 30F,
-        CaptchaDifficulty.Hard => 20F,
-        _ => throw new ArgumentOutOfRangeException(nameof(config),
-            $"Invalid value for Difficulty: {config.Difficulty}. The provided captcha difficulty is not supported.")
-    };
-
     public Random RandomGenerator { get; set; } = new Random();
-
-    public SKBitmap GenerateImage()
+    public SKBitmap GenerateImage(CaptchaConfigurationData request)
     {
-        var bitmap = new SKBitmap(Width, Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        var frequency = request.Difficulty switch
+        {
+            CaptchaDifficulty.Easy => 300F,
+            CaptchaDifficulty.Medium => 100F,
+            CaptchaDifficulty.Challenging => 30F,
+            CaptchaDifficulty.Hard => 20F,
+            _ => throw new ArgumentOutOfRangeException(nameof(request),
+                $"Invalid value for Difficulty: {request.Difficulty}. The provided captcha difficulty is not supported.")
+        };
+
+        var bitmap = new SKBitmap(request.Width, request.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.Transparent);  // Clear the canvas with a transparent background
 
-        var rect = new SKRect(0, 0, Width, Height);
+        var rect = new SKRect(0, 0, request.Width, request.Height);
 
         // Draw a unique hatch pattern
         DrawUniqueHatch(canvas, rect, SKColors.DarkGray, SKColors.WhiteSmoke, true);
 
-        AdjustFontSizeToFit(canvas, Text, rect, FamilyName);
-        DrawWarpText(canvas, Text, rect, FamilyName);
-        AddRandomNoise(canvas, rect, Frequency);
+        AdjustFontSizeToFit(canvas, request.Text, rect, request.Font);
+        DrawWarpText(canvas, request.Text, rect, request.Font);
+        AddRandomNoise(canvas, rect, frequency);
 
         return bitmap;
     }
