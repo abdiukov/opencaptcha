@@ -1,9 +1,10 @@
 namespace Captcha.Core.Models;
 using SkiaSharp;
 
-public class CaptchaImage()
+public class CaptchaDrawingService()
 {
-    public Random RandomGenerator { get; set; } = new Random();
+    private Random RandomGenerator { get; set; } = new Random();
+
     public SKBitmap GenerateImage(CaptchaConfigurationData request)
     {
         var frequency = request.Difficulty switch
@@ -16,15 +17,12 @@ public class CaptchaImage()
                 $"Invalid value for Difficulty: {request.Difficulty}. The provided captcha difficulty is not supported.")
         };
 
-        var bitmap = new SKBitmap(request.Width, request.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        var bitmap = new SKBitmap(request.Width, request.Height, SKColorType.Gray8, SKAlphaType.Opaque);
         using var canvas = new SKCanvas(bitmap);
-        canvas.Clear(SKColors.Transparent);  // Clear the canvas with a transparent background
-
         var rect = new SKRect(0, 0, request.Width, request.Height);
 
         // Draw a unique hatch pattern
-        DrawUniqueHatch(canvas, rect, SKColors.DarkGray, SKColors.WhiteSmoke, true);
-
+        DrawUniqueHatch(canvas, rect, SKColors.DarkGray, SKColors.WhiteSmoke, false);
         AdjustFontSizeToFit(canvas, request.Text, rect, request.Font);
         DrawWarpText(canvas, request.Text, rect, request.Font);
         AddRandomNoise(canvas, rect, frequency);
@@ -82,9 +80,9 @@ public class CaptchaImage()
         warpMatrix.TransX = transX;
         warpMatrix.TransY = transY;
 
-        warpMatrix.Persp0 = RandomGenerator.Next(-100, 100) / 50000.0f; // Horizontal perspective
-        warpMatrix.Persp1 = RandomGenerator.Next(-100, 100) / 50000.0f; // Vertical perspective
-        warpMatrix.Persp2 = 1 + (RandomGenerator.Next(-100, 100) / 50000.0f); // Perspective division factor
+        warpMatrix.Persp0 = RandomGenerator.Next(-100, 100) / 1000000.0f; // Horizontal perspective
+        warpMatrix.Persp1 = RandomGenerator.Next(-100, 100) / 1000000.0f; // Vertical perspective
+        warpMatrix.Persp2 = 1 + (RandomGenerator.Next(-100, 100) / 1000000.0f); // Perspective division factor
 
 
         path.Transform(warpMatrix);

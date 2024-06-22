@@ -8,11 +8,11 @@ public class CaptchaService : ICaptchaService
 {
     public async Task<FileContentResult> CreateCaptchaImageAsync(CaptchaConfigurationData config)
     {
-        var image = new CaptchaImage(config);
+        var image = new CaptchaDrawingService();
 
         // Save the image to a memory stream so we can return it as a file
         await using var ms = new MemoryStream();
-        using var data = image.Value.Encode(SKEncodedImageFormat.Jpeg, 100); // quality is set to 100, vary as needed
+        using var data = image.GenerateImage(config).Encode(SKEncodedImageFormat.Jpeg, 30); // quality is set to 100, vary as needed
         data.SaveTo(ms);
 
         var imageBytes = ms.ToArray();
@@ -20,4 +20,6 @@ public class CaptchaService : ICaptchaService
         // Return the image as a jpeg file
         return new FileContentResult(imageBytes, "image/jpeg");
     }
+
+
 }

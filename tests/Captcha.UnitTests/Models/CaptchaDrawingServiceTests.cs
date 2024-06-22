@@ -5,7 +5,7 @@ using Captcha.Core.Models;
 using NUnit.Framework;
 
 [TestFixture]
-public class CaptchaImageTests
+public class CaptchaDrawingServiceTests
 {
     [Test]
     public void CaptchaImageConstructedWithConfigGeneratesImageOfCorrectDimensions()
@@ -21,7 +21,7 @@ public class CaptchaImageTests
         };
 
         // Act
-        var captchaImage = new CaptchaImage(config);
+        var captchaImage = new CaptchaDrawingService(config);
         Assert.Multiple(() =>
         {
 
@@ -45,7 +45,7 @@ public class CaptchaImageTests
         };
 
         // Act
-        var captchaImage = new CaptchaImage(config);
+        var captchaImage = new CaptchaDrawingService(config);
         Assert.Multiple(() =>
         {
 
@@ -69,7 +69,7 @@ public class CaptchaImageTests
         };
 
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => new CaptchaImage(config));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new CaptchaDrawingService(config));
     }
 
     [Test]
@@ -86,7 +86,7 @@ public class CaptchaImageTests
         };
 
         // Act & Assert
-        Assert.Throws<Exception>(() => new CaptchaImage(config));
+        Assert.Throws<Exception>(() => new CaptchaDrawingService(config));
     }
 
 
@@ -104,7 +104,7 @@ public class CaptchaImageTests
         };
 
         // Act
-        var captchaImage = new CaptchaImage(config);
+        var captchaImage = new CaptchaDrawingService(config);
 
         // Assert
         Assert.That(captchaImage.Value, Is.Not.Null);
