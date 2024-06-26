@@ -1,15 +1,14 @@
 namespace Captcha.FunctionalTests.Support;
 using RestSharp;
 
-public class TestBase : IDisposable
+public class TestBase
 {
     protected RestClient Client { get; set; }
+    protected ScenarioContext Context { get; set; }
 
-    protected TestBase(ScenarioContext scenarioContext) => Client = new RestClient(new RestClientOptions(TestConstants.ServiceUrl));
-
-    public void Dispose()
+    protected TestBase(ScenarioContext context)
     {
-        Client.Dispose();
-        GC.SuppressFinalize(this);
+        Client = new RestClient(new RestClientOptions(TestConstants.ServiceUrl));
+        Context = context;
     }
 }

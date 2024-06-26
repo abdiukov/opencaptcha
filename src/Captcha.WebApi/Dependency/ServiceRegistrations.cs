@@ -25,7 +25,7 @@ public static class ServiceRegistrations
         builder.Services.AddSwaggerGen(c =>
         {
             c.ExampleFilters();
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "OpenCaptcha API" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "OpenCaptcha API", Version = "1" });
         });
         builder.Services.AddSwaggerExamplesFromAssemblyOf<CreateCaptchaExamples>();
 

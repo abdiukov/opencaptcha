@@ -3,12 +3,24 @@
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:5280"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "environmentVariables": {
+        "ASPNETCORE_HTTPS_PORTS": "5280",
+        "ASPNETCORE_HTTP_PORTS": "5279"
+      },
+      "publishAllPorts": true,
+      "useSSL": true,
+      "httpPort": 5279,
+      "sslPort": 5280
     }
   },
   "$schema": "http://json.schemastore.org/launchsettings.json"

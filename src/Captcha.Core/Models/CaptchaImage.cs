@@ -37,7 +37,7 @@ public class CaptchaImage
     private void GenerateImage()
     {
         // Create a new 32-bit bitmap image.
-        var bitmap = new Bitmap(_width, _height, PixelFormat.Format32bppArgb);
+        var bitmap = new Bitmap(_width, _height, PixelFormat.Format16bppRgb555);
 
         // Create a graphics object for drawing.
         var g = Graphics.FromImage(bitmap);
