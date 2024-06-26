@@ -1,13 +1,15 @@
 namespace Captcha.FunctionalTests.StepDefinitions;
 
 using System.Drawing;
+using System.Globalization;
 using Core.Models;
+using NUnit.Framework;
 using RestSharp;
 using Support;
 using TechTalk.SpecFlow;
 
 [Binding]
-public class CaptchaSteps(ScenarioContext scenarioContext) : TestBase(scenarioContext)
+public class CaptchaSteps(ScenarioContext context) : TestBase(context)
 {
     private CaptchaRequest _request;
     private RestResponse _response;
@@ -20,8 +22,8 @@ public class CaptchaSteps(ScenarioContext scenarioContext) : TestBase(scenarioCo
         _request = new CaptchaRequest
         {
             Text = row["Text"],
-            Width = string.IsNullOrEmpty(row["Width"]) ? null : int.Parse(row["Width"]),
-            Height = string.IsNullOrEmpty(row["Height"]) ? null : int.Parse(row["Height"]),
+            Width = string.IsNullOrEmpty(row["Width"]) ? null : int.Parse(row["Width"], CultureInfo.InvariantCulture),
+            Height = string.IsNullOrEmpty(row["Height"]) ? null : int.Parse(row["Height"], CultureInfo.InvariantCulture),
             Difficulty = string.IsNullOrEmpty(row["Difficulty"]) ? null
                 : Enum.Parse<CaptchaDifficulty>(row["Difficulty"], true)
         };
@@ -31,7 +33,7 @@ public class CaptchaSteps(ScenarioContext scenarioContext) : TestBase(scenarioCo
     public async Task WhenISendTheRequestToTheCreateEndpointOfTheCaptchaController()
     {
         var request = new RestRequest("captcha") // calls localhost/captcha
-            { RequestFormat = DataFormat.Json, Method = Method.Post };
+        { RequestFormat = DataFormat.Json, Method = Method.Post };
         request.AddJsonBody(_request);
         _response = await Client.ExecuteAsync(request);
     }
@@ -43,10 +45,10 @@ public class CaptchaSteps(ScenarioContext scenarioContext) : TestBase(scenarioCo
         using var ms = new MemoryStream(_response.RawBytes);
         var img = Image.FromStream(ms);
 
-        var expectedWidth = int.Parse(row["Width"]);
-        var expectedHeight = int.Parse(row["Height"]);
+        var expectedWidth = int.Parse(row["Width"], CultureInfo.InvariantCulture);
+        var expectedHeight = int.Parse(row["Height"], CultureInfo.InvariantCulture);
 
-        img.Width.Equals(expectedWidth);
-        img.Height.Equals(expectedHeight);
+        Assert.That(img.Width, Is.EqualTo(expectedWidth));
+        Assert.That(img.Height, Is.EqualTo(expectedHeight));
     }
 }

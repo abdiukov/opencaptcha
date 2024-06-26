@@ -1,5 +1,5 @@
 namespace Captcha.Core.Extensions;
-using System.Drawing;
+
 using Models;
 
 public static class MappingExtensions
@@ -9,7 +9,7 @@ public static class MappingExtensions
         Text = request.Text,
         Width = request.Width ?? 400,
         Height = request.Height ?? 100,
-        Font = FontFamily.GenericSerif.Name,
+        Font = "Arial Unicode MS",
         Difficulty = request.Difficulty ?? CaptchaDifficulty.Medium
     };
 }

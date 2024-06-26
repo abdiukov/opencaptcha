@@ -1,5 +1,4 @@
 namespace Captcha.UnitTests.Extensions;
-using System.Drawing;
 using Captcha.Core.Extensions;
 using Core.Models;
 using NUnit.Framework;
@@ -40,11 +39,11 @@ public class MappingExtensionsTests
     }
 
     [Test]
-    public void ToDomainUsesFontFamilyGenericSerifNameForFontProperty()
+    public void ToDomainUsesArialUnicodeMsForFontProperty()
     {
         var request = new CaptchaRequest();
         var result = request.ToDomain();
-        Assert.That(result.Font, Is.EqualTo(FontFamily.GenericSerif.Name));
+        Assert.That(result.Font, Is.EqualTo("Arial Unicode MS"));
     }
 
     [Test]
