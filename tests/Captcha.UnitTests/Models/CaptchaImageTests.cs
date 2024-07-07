@@ -70,7 +70,7 @@ public class CaptchaImageTests
         };
 
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => new CaptchaImage(config));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new CaptchaImage(config).Create());
     }
 
 
@@ -88,7 +88,7 @@ public class CaptchaImageTests
         };
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new CaptchaImage(config));
+        Assert.Throws<ArgumentException>(() => new CaptchaImage(config).Create());
     }
 
     [Test]
@@ -105,7 +105,7 @@ public class CaptchaImageTests
         };
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new CaptchaImage(config));
+        Assert.Throws<ArgumentException>(() => new CaptchaImage(config).Create());
     }
 
 
