@@ -5,23 +5,20 @@ using System.Drawing.Imaging;
 
 public class CaptchaImage
 {
-    private readonly string _text;
-    private readonly int _width;
-    private readonly int _height;
-    private readonly string _familyName;
-    private readonly float _frequency;
-    private readonly Random _random = new();
-
-    public Bitmap Value { get; private set; }
+    public Random RandomGenerator { get; set; } = new Random();
+    public string Text { get; set; }
+    public int Width { get;set; }
+    public int Height { get; set; }
+    public string FamilyName { get; set; }
+    public float Frequency { get; set; }
 
     public CaptchaImage(CaptchaConfigurationData config)
     {
-        _text = config.Text;
-        _width = config.Width;
-        _height = config.Height;
-        _familyName = config.Font;
-
-        _frequency = config.Difficulty switch
+        Text = config.Text;
+        Width = config.Width;
+        Height = config.Height;
+        FamilyName = config.Font;
+        Frequency = config.Difficulty switch
         {
             CaptchaDifficulty.Easy => 300F,
             CaptchaDifficulty.Medium => 100F,
@@ -30,23 +27,21 @@ public class CaptchaImage
             _ => throw new ArgumentOutOfRangeException(nameof(config),
                 $"Invalid value for Difficulty: {config.Difficulty}. The provided captcha difficulty is not supported.")
         };
-        GenerateImage();
     }
 
-    //Code I found that generates image
-    private void GenerateImage()
+    public Bitmap Create()
     {
-        // Create a new 32-bit bitmap image.
-        var bitmap = new Bitmap(_width, _height, PixelFormat.Format16bppRgb555);
+        // Create a new 16-bit bitmap image.
+        var bitmap = new Bitmap(Width, Height, PixelFormat.Format16bppRgb555);
 
         // Create a graphics object for drawing.
-        var g = Graphics.FromImage(bitmap);
-        g.SmoothingMode = SmoothingMode.AntiAlias;
-        var rect = new Rectangle(0, 0, _width, _height);
+        var graphics = Graphics.FromImage(bitmap);
+        graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        var rect = new Rectangle(0, 0, Width, Height);
 
         // Fill in the background.
         var hatchBrush = new HatchBrush(HatchStyle.SmallConfetti, Color.LightGray, Color.White);
-        g.FillRectangle(hatchBrush, rect);
+        graphics.FillRectangle(hatchBrush, rect);
 
         // Set up the text font.
         SizeF size;
@@ -57,8 +52,8 @@ public class CaptchaImage
         do
         {
             fontSize--;
-            font = new Font(_familyName, fontSize, FontStyle.Bold);
-            size = g.MeasureString(_text, font);
+            font = new Font(FamilyName, fontSize, FontStyle.Bold);
+            size = graphics.MeasureString(Text, font);
         } while (size.Width > rect.Width);
 
         // Set up the text format.
@@ -70,14 +65,14 @@ public class CaptchaImage
 
         // Create a path using the text and warp it randomly.
         var path = new GraphicsPath();
-        path.AddString(_text, font.FontFamily, (int)font.Style, font.Size, rect, format);
+        path.AddString(Text, font.FontFamily, (int)font.Style, font.Size, rect, format);
         var v = 4F;
         PointF[] points =
         [
-            new(_random.Next(rect.Width) / v, _random.Next(rect.Height) / v),
-            new(rect.Width - (_random.Next(rect.Width) / v), _random.Next(rect.Height) / v),
-            new(_random.Next(rect.Width) / v, rect.Height - (_random.Next(rect.Height) / v)),
-            new(rect.Width - (_random.Next(rect.Width) / v), rect.Height - (_random.Next(rect.Height) / v))
+            new(RandomGenerator.Next(rect.Width) / v, RandomGenerator.Next(rect.Height) / v),
+            new(rect.Width - (RandomGenerator.Next(rect.Width) / v), RandomGenerator.Next(rect.Height) / v),
+            new(RandomGenerator.Next(rect.Width) / v, rect.Height - (RandomGenerator.Next(rect.Height) / v)),
+            new(rect.Width - (RandomGenerator.Next(rect.Width) / v), rect.Height - (RandomGenerator.Next(rect.Height) / v))
         ];
         var matrix = new Matrix();
         matrix.Translate(0F, 0F);
@@ -85,25 +80,24 @@ public class CaptchaImage
 
         // Draw the text.
         hatchBrush = new HatchBrush(HatchStyle.LargeConfetti, Color.LightGray, Color.DarkGray);
-        g.FillPath(hatchBrush, path);
+        graphics.FillPath(hatchBrush, path);
 
         // Add some random noise.
         var m = Math.Max(rect.Width, rect.Height);
-        for (var i = 0; i < (int)(rect.Width * rect.Height / _frequency); i++)
+        for (var i = 0; i < (int)(rect.Width * rect.Height / Frequency); i++)
         {
-            var x = _random.Next(rect.Width);
-            var y = _random.Next(rect.Height);
-            var w = _random.Next(m / 50);
-            var h = _random.Next(m / 50);
-            g.FillEllipse(hatchBrush, x, y, w, h);
+            var x = RandomGenerator.Next(rect.Width);
+            var y = RandomGenerator.Next(rect.Height);
+            var w = RandomGenerator.Next(m / 50);
+            var h = RandomGenerator.Next(m / 50);
+            graphics.FillEllipse(hatchBrush, x, y, w, h);
         }
 
         // Clean up.
         font.Dispose();
         hatchBrush.Dispose();
-        g.Dispose();
+        graphics.Dispose();
 
-        // Set the image.
-        Value = bitmap;
+        return bitmap;
     }
 }
