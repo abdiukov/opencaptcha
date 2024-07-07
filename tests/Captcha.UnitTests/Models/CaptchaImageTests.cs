@@ -22,12 +22,12 @@ public class CaptchaImageTests
 
         // Act
         var captchaImage = new CaptchaImage(config);
+        var created = captchaImage.Create();
         Assert.Multiple(() =>
         {
-
             // Assert
-            Assert.That(captchaImage.Value.Width, Is.EqualTo(config.Width));
-            Assert.That(captchaImage.Value.Height, Is.EqualTo(config.Height));
+            Assert.That(created.Width, Is.EqualTo(config.Width));
+            Assert.That(created.Height, Is.EqualTo(config.Height));
         });
     }
 
@@ -46,12 +46,13 @@ public class CaptchaImageTests
 
         // Act
         var captchaImage = new CaptchaImage(config);
+        var created = captchaImage.Create();
         Assert.Multiple(() =>
         {
 
             // Assert
-            Assert.That(captchaImage.Value.Width, Is.EqualTo(config.Width));
-            Assert.That(captchaImage.Value.Height, Is.EqualTo(config.Height));
+            Assert.That(created.Width, Is.EqualTo(config.Width));
+            Assert.That(created.Height, Is.EqualTo(config.Height));
         });
     }
 
@@ -123,9 +124,9 @@ public class CaptchaImageTests
 
         // Act
         var captchaImage = new CaptchaImage(config);
-
+        var created = captchaImage.Create();
         // Assert
-        Assert.That(captchaImage.Value, Is.Not.Null);
+        Assert.That(created, Is.Not.Null);
     }
 
 }

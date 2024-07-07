@@ -8,13 +8,13 @@ public class CaptchaService : ICaptchaService
     public async Task<FileContentResult> CreateCaptchaImageAsync(CaptchaConfigurationData config)
     {
         var image = new CaptchaImage(config);
+        using var created = image.Create();
 
         // Save the image to a memory stream so we can return it as a file
-        await using var ms = new MemoryStream();
-        image.Value.Save(ms, ImageFormat.Jpeg);
-        var imageBytes = ms.ToArray();
+        await using var memoryStream = new MemoryStream();
+        created.Save(memoryStream, ImageFormat.Jpeg);
 
         // Return the image as a jpeg file
-        return new FileContentResult(imageBytes, "image/jpeg");
+        return new FileContentResult(memoryStream.ToArray(), "image/jpeg");
     }
 }

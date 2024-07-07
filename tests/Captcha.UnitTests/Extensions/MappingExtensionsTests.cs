@@ -1,5 +1,4 @@
 namespace Captcha.UnitTests.Extensions;
-using System.Drawing;
 using Captcha.Core.Extensions;
 using Core.Models;
 using NUnit.Framework;
