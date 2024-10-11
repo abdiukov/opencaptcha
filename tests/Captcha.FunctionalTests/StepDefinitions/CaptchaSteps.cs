@@ -51,4 +51,26 @@ public class CaptchaSteps(ScenarioContext context) : TestBase(context)
         Assert.That(img.Width, Is.EqualTo(expectedWidth));
         Assert.That(img.Height, Is.EqualTo(expectedHeight));
     }
+
+    [Then(@"I expect a captcha image to be returned without any black borders")]
+    public void ThenIExpectACaptchaImageToBeReturnedWithoutAnyBlackBorders()
+    {
+        using var ms = new MemoryStream(_response.RawBytes);
+        var img = Image.FromStream(ms);
+        var bmp = new Bitmap(img);
+
+        for (var i = 0; i < bmp.Width; i++)
+        {
+            for (var j = 0; j < bmp.Height; j++)
+            {
+                var pixel = bmp.GetPixel(i, j);
+
+                // If either R or G or B is less than 100, then it's a dark color
+                if (pixel.R < 100 || pixel.G < 100 || pixel.B < 100)
+                {
+                    throw new AssertionException($"Black/Dark color found in the image. Hex: {pixel.Name}");
+                }
+            }
+        }
+    }
 }
