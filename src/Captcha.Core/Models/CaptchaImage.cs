@@ -99,6 +99,6 @@ public class CaptchaImage(CaptchaConfigurationData config)
     private static void FillInTheBackground(Rectangle rectangle, Graphics graphics)
     {
         using var hatchBrush = new HatchBrush(HatchStyle.SmallConfetti, Color.LightGray, Color.White);
-        graphics.FillRectangle(hatchBrush, rectangle);
+        graphics.FillRegion(hatchBrush, new Region(rectangle));
     }
 }

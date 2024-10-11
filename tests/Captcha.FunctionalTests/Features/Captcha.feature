@@ -31,3 +31,13 @@ I want to send different captcha requests and assure the image is generated
           | Ciao         | 200   |        | Easy        | 200           | 100            |
           | Olá          | 300   | 300    | Challenging | 300           | 300            |
           | สวัสดี         | 400   | 400    | Hard        | 400           | 400            |
+
+    Scenario: Captcha should not have any black borders
+        Given I have a captcha request with following parameters:
+          | Text    | Width | Height | Difficulty |
+          | Bonjour |       |        | Easy       |
+        When I send the request to the Create endpoint of the CaptchaController
+        Then I expect a captcha image to be returned with the following attributes:
+          | Width | Height |
+          | 400   | 100    |
+        Then I expect a captcha image to be returned without any black borders
